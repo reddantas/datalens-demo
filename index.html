@@ -9,8 +9,7 @@ nlp = spacy.load("pt_core_news_sm")
 # 2. Simular a Extração de Dados do Google Drive
 def simular_extracao_drive(url_drive):
     print(f"A ligar ao repositório: {url_drive}...")
-    # Num cenário real, usaríamos a API do Google Drive (google-api-python-client)
-    # Aqui, simulamos o texto extraído de PDFs de teses e artigos sobre IA
+    # Aqui simulamos o texto extraído de PDFs de teses e artigos sobre IA
     texto_extraido = """
     A inteligência artificial e o machine learning estão a revolucionar o mercado.
     O deep learning é uma subárea do machine learning focada em redes neurais.
@@ -19,17 +18,14 @@ def simular_extracao_drive(url_drive):
     """
     return texto_extraido
 
-link_exemplo = "[https://drive.google.com/drive/folders/1a2b3c4d5e](https://drive.google.com/drive/folders/1a2b3c4d5e)"
+link_exemplo = "https://drive.google.com/drive/folders/1a2b3c4d5e"
 documento_bruto = simular_extracao_drive(link_exemplo)
 
-# 3. Processar o Texto com NLP para encontrar "Conceitos-Chave"
+# 3. Processar o Texto com NLP
 doc = nlp(documento_bruto)
-conceitos = ["Inteligência Artificial", "Machine Learning", "Deep Learning", 
-             "Redes Neurais", "Big Data Analytics", "Data Mining", "Visão Computacional"]
 
 # 4. Criar o Mapa de Conhecimento (Grafo) com PyVis
 print("A gerar o Mapa de Conhecimento Imersivo...")
-# Configuramos o fundo para azul escuro (Slate 950) tal como no protótipo visual
 net = Network(height="600px", width="100%", bgcolor="#020617", font_color="white", notebook=True, cdn_resources='remote')
 
 # Configurar a física para um visual fluido
@@ -38,7 +34,7 @@ net.repulsion(node_distance=150, central_gravity=0.1, spring_length=150)
 # Adicionar o nó central (A nossa lente principal)
 net.add_node("AI & Machine Learning", size=40, color="#10b981", title="Sintetizando 42 artigos")
 
-# Adicionar sub-tópicos e ligações com base na análise do texto
+# Adicionar sub-tópicos e ligações
 conexoes = [
     ("AI & Machine Learning", "Neural Networks", "#06b6d4"),
     ("AI & Machine Learning", "Big Data Analytics", "#3b82f6"),
@@ -49,10 +45,8 @@ conexoes = [
 ]
 
 for origem, destino, cor in conexoes:
-    # Adicionar os nós se ainda não existirem
     if destino not in net.get_nodes():
         net.add_node(destino, size=25, color=cor)
-    # Criar a ligação
     net.add_edge(origem, destino, color="#334155")
 
 # 5. Guardar e Renderizar no Google Colab
