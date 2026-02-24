@@ -1,55 +1,133 @@
-import spacy
-from pyvis.network import Network
-import IPython
-
-# 1. Carregar o modelo de Linguagem Natural (NLP) em Português
-print("A carregar motor de Inteligência Artificial...")
-nlp = spacy.load("pt_core_news_sm")
-
-# 2. Simular a Extração de Dados do Google Drive
-def simular_extracao_drive(url_drive):
-    print(f"A ligar ao repositório: {url_drive}...")
-    # Aqui simulamos o texto extraído de PDFs de teses e artigos sobre IA
-    texto_extraido = """
-    A inteligência artificial e o machine learning estão a revolucionar o mercado.
-    O deep learning é uma subárea do machine learning focada em redes neurais.
-    As redes neurais exigem ferramentas robustas de big data analytics.
-    O data mining ajuda a limpar os dados antes de aplicar algoritmos de visão computacional.
-    """
-    return texto_extraido
-
-link_exemplo = "https://drive.google.com/drive/folders/1a2b3c4d5e"
-documento_bruto = simular_extracao_drive(link_exemplo)
-
-# 3. Processar o Texto com NLP
-doc = nlp(documento_bruto)
-
-# 4. Criar o Mapa de Conhecimento (Grafo) com PyVis
-print("A gerar o Mapa de Conhecimento Imersivo...")
-net = Network(height="600px", width="100%", bgcolor="#020617", font_color="white", notebook=True, cdn_resources='remote')
-
-# Configurar a física para um visual fluido
-net.repulsion(node_distance=150, central_gravity=0.1, spring_length=150)
-
-# Adicionar o nó central (A nossa lente principal)
-net.add_node("AI & Machine Learning", size=40, color="#10b981", title="Sintetizando 42 artigos")
-
-# Adicionar sub-tópicos e ligações
-conexoes = [
-    ("AI & Machine Learning", "Neural Networks", "#06b6d4"),
-    ("AI & Machine Learning", "Big Data Analytics", "#3b82f6"),
-    ("AI & Machine Learning", "Data Mining", "#f59e0b"),
-    ("AI & Machine Learning", "Deep Learning", "#a855f7"),
-    ("Deep Learning", "Computer Vision", "#0ea5e9"),
-    ("Neural Networks", "Deep Learning", "#a855f7")
-]
-
-for origem, destino, cor in conexoes:
-    if destino not in net.get_nodes():
-        net.add_node(destino, size=25, color=cor)
-    net.add_edge(origem, destino, color="#334155")
-
-# 5. Guardar e Renderizar no Google Colab
-nome_ficheiro = "datalens_grafico.html"
-net.show(nome_ficheiro)
-IPython.display.HTML(filename=nome_ficheiro)
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataLens - Knowledge Map</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        #network-container {
+            width: 100%; height: 100%;
+            background: radial-gradient(circle at center, #111827 0%, #030712 100%);
+            outline: none;
+        }
+        .vis-network:focus { outline: none; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-300 h-screen overflow-hidden flex">
+    <aside class="w-64 bg-slate-900 border-r border-slate-800 flex flex-col z-10 shadow-2xl">
+        <div class="p-6 flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center shadow-[0_0_15px_rgba(16,185,129,0.5)]">
+                <svg class="w-5 h-5 text-slate-950" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg>
+            </div>
+            <h1 class="text-xl font-bold text-white tracking-wide">DataLens</h1>
+        </div>
+        <nav class="flex-1 px-4 space-y-1 overflow-y-auto">
+            <a href="#" class="flex items-center gap-3 px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors">Dashboard</a>
+            <a href="#" class="flex items-center gap-3 px-3 py-2 bg-emerald-500/10 text-emerald-400 rounded-lg transition-colors border border-emerald-500/20">Knowledge Map</a>
+            <div class="pt-6 pb-2"><p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Fontes de Dados</p></div>
+            <div class="px-3 py-2 bg-slate-800/50 rounded-lg border border-slate-700/50">
+                <label class="text-xs text-slate-400 mb-1 block">Importar via Drive</label>
+                <div class="flex gap-2">
+                    <input type="text" id="driveLink" placeholder="Cole o link..." class="w-full bg-slate-900 border border-slate-700 rounded text-xs px-2 py-1.5 focus:outline-none focus:border-emerald-500 text-white">
+                    <button onclick="simulateAnalysis()" class="bg-emerald-600 hover:bg-emerald-500 text-white rounded px-2 py-1 text-xs transition-colors shadow-[0_0_10px_rgba(16,185,129,0.3)]">Analisar</button>
+                </div>
+                <div id="loadingState" class="hidden mt-2 flex items-center gap-2 text-xs text-emerald-400">Processando PDFs...</div>
+            </div>
+        </nav>
+    </aside>
+    <main class="flex-1 flex flex-col relative">
+        <header class="h-16 border-b border-slate-800 bg-slate-900/80 backdrop-blur-sm absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-6">
+            <h2 class="text-lg font-semibold text-white">Knowledge Map</h2>
+        </header>
+        <div id="network-container" class="flex-1"></div>
+        <div id="info-panel" class="absolute top-16 right-0 bottom-0 w-80 bg-slate-900/95 backdrop-blur-md border-l border-slate-800 p-6 transform translate-x-full transition-transform duration-300 overflow-y-auto z-20">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-white font-semibold text-lg">Info Panel</h3>
+                <button onclick="closePanel()" class="text-slate-500 hover:text-white">X</button>
+            </div>
+            <div id="node-details" class="hidden">
+                <h2 id="node-title" class="text-2xl font-bold mb-2"></h2>
+                <p id="node-subtitle" class="text-xs text-slate-400 mb-4 border-b border-slate-800 pb-4"></p>
+                <p id="node-desc" class="text-sm text-slate-300 leading-relaxed mb-6"></p>
+            </div>
+            <div id="empty-state" class="text-center mt-20">
+                <p class="text-sm text-slate-500">Selecione um nó no grafo para ver os detalhes.</p>
+            </div>
+        </div>
+    </main>
+    <script>
+        const nodeData = {
+            1: { title: "AI & Machine Learning", desc: "Sintetizando 42 artigos sobre IA extraídos do repositório.", papers: 42, color: "#10b981" },
+            2: { title: "Neural Networks", desc: "Conceitos fundamentais de redes neurais profundas.", papers: 15, color: "#06b6d4" },
+            3: { title: "Big Data Analytics", desc: "Técnicas de processamento em larga escala.", papers: 28, color: "#3b82f6" },
+            4: { title: "Data Mining", desc: "Mineração de padrões em bases estruturadas.", papers: 10, color: "#f59e0b" },
+            5: { title: "Deep Learning", desc: "Redes com múltiplas camadas para extração de alto nível.", papers: 22, color: "#a855f7" },
+            6: { title: "Computer Vision", desc: "Análise e interpretação de imagens por IA.", papers: 8, color: "#0ea5e9" }
+        };
+        function initNetwork() {
+            const nodes = new vis.DataSet([
+                { id: 1, label: 'AI & Machine Learning', value: 40, font: { size: 24, color: '#fff', face: 'Inter', bold: true }, color: { background: '#10b981', border: '#047857' } },
+                { id: 2, label: 'Neural Networks', value: 20, font: { color: '#cbd5e1' }, color: { background: '#06b6d4', border: '#0891b2' } },
+                { id: 3, label: 'Big Data Analytics', value: 25, font: { color: '#cbd5e1' }, color: { background: '#3b82f6', border: '#2563eb' } },
+                { id: 4, label: 'Data Mining', value: 15, font: { color: '#cbd5e1' }, color: { background: '#f59e0b', border: '#d97706' } },
+                { id: 5, label: 'Deep Learning', value: 18, font: { color: '#cbd5e1' }, color: { background: '#a855f7', border: '#9333ea' } },
+                { id: 6, label: 'Computer Vision', value: 12, font: { color: '#cbd5e1' }, color: { background: '#0ea5e9', border: '#0284c7' } }
+            ]);
+            for(let i=7; i<=30; i++) nodes.add({ id: i, value: Math.random() * 5 + 2, color: { background: ['#10b981', '#06b6d4', '#3b82f6', '#f59e0b'][Math.floor(Math.random()*4)], border: 'transparent' } });
+            const edges = new vis.DataSet([
+                { from: 1, to: 2, color: { color: '#047857', opacity: 0.6 }, width: 2 },
+                { from: 1, to: 3, color: { color: '#047857', opacity: 0.6 }, width: 2 },
+                { from: 1, to: 4, color: { color: '#047857', opacity: 0.6 }, width: 2 },
+                { from: 1, to: 5, color: { color: '#047857', opacity: 0.6 }, width: 2 },
+                { from: 2, to: 5, color: { color: '#334155', opacity: 0.4 } },
+                { from: 3, to: 4, color: { color: '#334155', opacity: 0.4 } },
+                { from: 5, to: 6, color: { color: '#334155', opacity: 0.4 }, width: 1.5 },
+                { from: 1, to: 6, color: { color: '#047857', opacity: 0.6 } }
+            ]);
+            for(let i=7; i<=30; i++) {
+                edges.add({ from: i, to: Math.floor(Math.random() * 6) + 1, color: { color: '#334155', opacity: 0.2 } });
+            }
+            const container = document.getElementById('network-container');
+            const data = { nodes: nodes, edges: edges };
+            const options = { nodes: { shape: 'dot' }, physics: { barnesHut: { gravitationalConstant: -3000 } } };
+            const network = new vis.Network(container, data, options);
+            network.on("click", function (params) {
+                if (params.nodes.length > 0) updateInfoPanel(params.nodes[0]);
+                else closePanel();
+            });
+        }
+        function updateInfoPanel(nodeId) {
+            const panel = document.getElementById('info-panel');
+            const data = nodeData[nodeId];
+            if(data) {
+                document.getElementById('empty-state').classList.add('hidden');
+                document.getElementById('node-details').classList.remove('hidden');
+                document.getElementById('node-title').textContent = data.title;
+                document.getElementById('node-title').style.color = data.color;
+                document.getElementById('node-subtitle').textContent = `${data.papers} Documentos Conectados`;
+                document.getElementById('node-desc').textContent = data.desc;
+                panel.style.transform = 'translateX(0)';
+            }
+        }
+        function closePanel() {
+            document.getElementById('info-panel').style.transform = 'translateX(100%)';
+        }
+        function simulateAnalysis() {
+            const input = document.getElementById('driveLink').value;
+            if(!input) return alert("Cole um link!");
+            const loading = document.getElementById('loadingState');
+            loading.classList.remove('hidden');
+            document.getElementById('network-container').innerHTML = '';
+            setTimeout(() => { loading.classList.add('hidden'); initNetwork(); }, 2000);
+        }
+        initNetwork();
+    </script>
+</body>
+</html>
