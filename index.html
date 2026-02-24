@@ -3,84 +3,199 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DataLens - Knowledge Map</title>
+    <title>DataLens - Mapa de Conhecimento</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; }
+        
+        /* Estilos específicos para o canvas do grafo */
         #network-container {
-            width: 100%; height: 100%;
+            width: 100%;
+            height: 100%;
             background: radial-gradient(circle at center, #111827 0%, #030712 100%);
             outline: none;
         }
         .vis-network:focus { outline: none; }
+        
+        /* Scrollbar customizada */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-300 h-screen overflow-hidden flex">
+
+    <!-- Sidebar / Menu Lateral -->
     <aside class="w-64 bg-slate-900 border-r border-slate-800 flex flex-col z-10 shadow-2xl">
         <div class="p-6 flex items-center gap-3">
-            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center shadow-[0_0_15px_rgba(16,185,129,0.5)]">
-                <svg class="w-5 h-5 text-slate-950" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg>
-            </div>
+            <img src="https://i.ibb.co/JjJ38JJP/logo-data-lens-sem-nome.png" alt="DataLens Logo" class="h-8 w-auto">
             <h1 class="text-xl font-bold text-white tracking-wide">DataLens</h1>
         </div>
+
         <nav class="flex-1 px-4 space-y-1 overflow-y-auto">
-            <a href="#" class="flex items-center gap-3 px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors">Dashboard</a>
-            <a href="#" class="flex items-center gap-3 px-3 py-2 bg-emerald-500/10 text-emerald-400 rounded-lg transition-colors border border-emerald-500/20">Knowledge Map</a>
-            <div class="pt-6 pb-2"><p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Fontes de Dados</p></div>
+            <a href="#" class="flex items-center gap-3 px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                Dashboard
+            </a>
+            <a href="#" class="flex items-center gap-3 px-3 py-2 bg-emerald-500/10 text-emerald-400 rounded-lg transition-colors border border-emerald-500/20">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                Mapa de Conhecimento
+            </a>
+            <a href="#" class="flex items-center gap-3 px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                Tópicos Salvos
+            </a>
+
+            <div class="pt-6 pb-2">
+                <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Fontes de Dados</p>
+            </div>
+            
+            <!-- Simulação de Input do Drive -->
             <div class="px-3 py-2 bg-slate-800/50 rounded-lg border border-slate-700/50">
                 <label class="text-xs text-slate-400 mb-1 block">Importar via Drive</label>
                 <div class="flex gap-2">
-                    <input type="text" id="driveLink" placeholder="Cole o link..." class="w-full bg-slate-900 border border-slate-700 rounded text-xs px-2 py-1.5 focus:outline-none focus:border-emerald-500 text-white">
+                    <input type="text" id="driveLink" placeholder="Cole o link do repositório..." class="w-full bg-slate-900 border border-slate-700 rounded text-xs px-2 py-1.5 focus:outline-none focus:border-emerald-500 text-white placeholder-slate-600">
                     <button onclick="simulateAnalysis()" class="bg-emerald-600 hover:bg-emerald-500 text-white rounded px-2 py-1 text-xs transition-colors shadow-[0_0_10px_rgba(16,185,129,0.3)]">Analisar</button>
                 </div>
-                <div id="loadingState" class="hidden mt-2 flex items-center gap-2 text-xs text-emerald-400">Processando PDFs...</div>
+                <div id="loadingState" class="hidden mt-2 flex items-center gap-2 text-xs text-emerald-400">
+                    <svg class="animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    Processando PDFs...
+                </div>
             </div>
+
+            <div class="pt-6 pb-2">
+                <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Categorias</p>
+            </div>
+            <label class="flex items-center gap-3 px-3 py-1.5 text-sm text-slate-400 hover:text-white cursor-pointer"><input type="checkbox" checked class="accent-emerald-500 bg-slate-800 border-slate-700 rounded"> Artigos Acadêmicos</label>
+            <label class="flex items-center gap-3 px-3 py-1.5 text-sm text-slate-400 hover:text-white cursor-pointer"><input type="checkbox" checked class="accent-emerald-500 bg-slate-800 border-slate-700 rounded"> Periódicos</label>
+            <label class="flex items-center gap-3 px-3 py-1.5 text-sm text-slate-400 hover:text-white cursor-pointer"><input type="checkbox" class="accent-emerald-500 bg-slate-800 border-slate-700 rounded"> Documentação Técnica</label>
         </nav>
     </aside>
+
+    <!-- Área Principal do Grafo -->
     <main class="flex-1 flex flex-col relative">
+        <!-- Cabeçalho -->
         <header class="h-16 border-b border-slate-800 bg-slate-900/80 backdrop-blur-sm absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-6">
-            <h2 class="text-lg font-semibold text-white">Knowledge Map</h2>
+            <h2 class="text-lg font-semibold text-white">Mapa de Conhecimento</h2>
+            <div class="flex items-center gap-4">
+                <div class="relative">
+                    <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    <input type="text" placeholder="Buscar tópicos, arquivos..." class="bg-slate-950 border border-slate-800 rounded-full pl-9 pr-4 py-1.5 text-sm focus:outline-none focus:border-emerald-500 text-white w-64 transition-colors">
+                </div>
+                <div class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 overflow-hidden flex items-center justify-center">
+                    <span class="text-xs font-bold text-slate-300">US</span>
+                </div>
+            </div>
         </header>
+
+        <!-- Container do Grafo -->
         <div id="network-container" class="flex-1"></div>
-        <div id="info-panel" class="absolute top-16 right-0 bottom-0 w-80 bg-slate-900/95 backdrop-blur-md border-l border-slate-800 p-6 transform translate-x-full transition-transform duration-300 overflow-y-auto z-20">
+
+        <!-- Painel Lateral Direito (Detalhes) -->
+        <div id="info-panel" class="absolute top-16 right-0 bottom-0 w-80 bg-slate-900/95 backdrop-blur-md border-l border-slate-800 p-6 transform translate-x-full transition-transform duration-300 overflow-y-auto z-20 shadow-[-10px_0_30px_rgba(0,0,0,0.5)]">
             <div class="flex justify-between items-center mb-6">
-                <h3 class="text-white font-semibold text-lg">Info Panel</h3>
-                <button onclick="closePanel()" class="text-slate-500 hover:text-white">X</button>
+                <h3 class="text-white font-semibold text-lg">Detalhes do Tema</h3>
+                <button onclick="closePanel()" class="text-slate-500 hover:text-white"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
             </div>
+            
             <div id="node-details" class="hidden">
-                <h2 id="node-title" class="text-2xl font-bold mb-2"></h2>
-                <p id="node-subtitle" class="text-xs text-slate-400 mb-4 border-b border-slate-800 pb-4"></p>
-                <p id="node-desc" class="text-sm text-slate-300 leading-relaxed mb-6"></p>
+                <h2 id="node-title" class="text-2xl font-bold text-emerald-400 mb-2"></h2>
+                
+                <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-800 border border-slate-700 mb-5">
+                    <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    <span id="node-subtitle" class="text-xs font-medium text-slate-300"></span>
+                </div>
+                
+                <!-- Caixa de Resumo IA -->
+                <div class="bg-slate-800/60 rounded-lg p-4 mb-6 border border-emerald-500/20 relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-1 h-full bg-emerald-500"></div>
+                    <div class="flex items-center gap-2 mb-2">
+                        <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        <h4 class="text-xs font-bold text-emerald-400 uppercase tracking-wider">Resumo Gerado por IA</h4>
+                    </div>
+                    <p id="node-desc" class="text-sm text-slate-300 leading-relaxed"></p>
+                </div>
+
+                <h4 class="text-xs font-semibold text-slate-400 mb-3 uppercase tracking-wider">Documentos Extraídos</h4>
+                
+                <div id="papers-list" class="space-y-3">
+                    <!-- Preenchido via Javascript -->
+                </div>
+
+                <a href="#" class="inline-block mt-4 text-sm text-emerald-400 hover:text-emerald-300">Ver Todos os Documentos →</a>
             </div>
+            
             <div id="empty-state" class="text-center mt-20">
-                <p class="text-sm text-slate-500">Selecione um nó no grafo para ver os detalhes.</p>
+                <svg class="w-12 h-12 text-slate-700 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"></path></svg>
+                <p class="text-sm text-slate-500">Selecione um nó no grafo para ver o resumo da IA, as conexões e os documentos extraídos.</p>
             </div>
         </div>
     </main>
+
     <script>
+        // Dados simulados baseados no contexto de Ciência da Informação (PT-BR)
         const nodeData = {
-            1: { title: "AI & Machine Learning", desc: "Sintetizando 42 artigos sobre IA extraídos do repositório.", papers: 42, color: "#10b981" },
-            2: { title: "Neural Networks", desc: "Conceitos fundamentais de redes neurais profundas.", papers: 15, color: "#06b6d4" },
-            3: { title: "Big Data Analytics", desc: "Técnicas de processamento em larga escala.", papers: 28, color: "#3b82f6" },
-            4: { title: "Data Mining", desc: "Mineração de padrões em bases estruturadas.", papers: 10, color: "#f59e0b" },
-            5: { title: "Deep Learning", desc: "Redes com múltiplas camadas para extração de alto nível.", papers: 22, color: "#a855f7" },
-            6: { title: "Computer Vision", desc: "Análise e interpretação de imagens por IA.", papers: 8, color: "#0ea5e9" }
+            1: { 
+                title: "Organização da Informação", 
+                desc: "Síntese de estudos sobre processos de representação, classificação, taxonomias e indexação para facilitar a recuperação em repositórios digitais.", 
+                papers: 42, color: "#10b981", 
+                papersList: ["Ontologias e Web Semântica.pdf", "Taxonomias Corporativas.pdf", "Sistemas de Classificação.pdf", "Metadados em Repositórios.pdf"] 
+            },
+            2: { 
+                title: "Gestão de Documentos", 
+                desc: "Práticas e normas para arquivística, gestão documental e o ciclo de vida da informação dentro de instituições e empresas.", 
+                papers: 15, color: "#06b6d4", 
+                papersList: ["Tabela de Temporalidade.pdf", "Normas ISO Gestão Documental.pdf", "Avaliação Arquivística.pdf"] 
+            },
+            3: { 
+                title: "Recuperação da Informação", 
+                desc: "Análise de modelos computacionais e estratégias de busca que garantem que o usuário encontre a informação certa no momento exato.", 
+                papers: 28, color: "#3b82f6", 
+                papersList: ["Modelos Booleanos e Vetoriais.pdf", "Estratégias de Busca Avançada.pdf"] 
+            },
+            4: { 
+                title: "Bibliometria", 
+                desc: "Métricas e indicadores científicos aplicados à produção acadêmica, análise de citações e impacto em revistas científicas.", 
+                papers: 10, color: "#f59e0b", 
+                papersList: ["Análise de Citações.pdf", "Impacto Qualis Capes.pdf", "Leis da Bibliometria.pdf"] 
+            },
+            5: { 
+                title: "Preservação Digital", 
+                desc: "Políticas e tecnologias focadas em garantir o acesso a documentos e arquivos digitais a longo prazo, evitando a obsolescência tecnológica.", 
+                papers: 22, color: "#a855f7", 
+                papersList: ["Estratégias de Migração.pdf", "Modelo OAIS para Arquivos.pdf", "Metadados de Preservação.pdf"] 
+            },
+            6: { 
+                title: "Gestão do Conhecimento", 
+                desc: "Abordagens institucionais para converter conhecimento tácito em explícito, promovendo o compartilhamento de informações corporativas.", 
+                papers: 8, color: "#0ea5e9", 
+                papersList: ["Espiral do Conhecimento.pdf", "Comunidades de Prática.pdf"] 
+            }
         };
+
+        // Função para inicializar a Rede (Grafo)
         function initNetwork() {
             const nodes = new vis.DataSet([
-                { id: 1, label: 'AI & Machine Learning', value: 40, font: { size: 24, color: '#fff', face: 'Inter', bold: true }, color: { background: '#10b981', border: '#047857' } },
-                { id: 2, label: 'Neural Networks', value: 20, font: { color: '#cbd5e1' }, color: { background: '#06b6d4', border: '#0891b2' } },
-                { id: 3, label: 'Big Data Analytics', value: 25, font: { color: '#cbd5e1' }, color: { background: '#3b82f6', border: '#2563eb' } },
-                { id: 4, label: 'Data Mining', value: 15, font: { color: '#cbd5e1' }, color: { background: '#f59e0b', border: '#d97706' } },
-                { id: 5, label: 'Deep Learning', value: 18, font: { color: '#cbd5e1' }, color: { background: '#a855f7', border: '#9333ea' } },
-                { id: 6, label: 'Computer Vision', value: 12, font: { color: '#cbd5e1' }, color: { background: '#0ea5e9', border: '#0284c7' } }
+                { id: 1, label: 'Organização da\nInformação', value: 40, font: { size: 24, color: '#fff', face: 'Inter', bold: true }, color: { background: '#10b981', border: '#047857' }, shadow: { enabled: true, color: '#10b981', size: 30, x: 0, y: 0 } },
+                { id: 2, label: 'Gestão de\nDocumentos', value: 20, font: { color: '#cbd5e1' }, color: { background: '#06b6d4', border: '#0891b2' }, shadow: { enabled: true, color: '#06b6d4', size: 15 } },
+                { id: 3, label: 'Recuperação da\nInformação', value: 25, font: { color: '#cbd5e1' }, color: { background: '#3b82f6', border: '#2563eb' }, shadow: { enabled: true, color: '#3b82f6', size: 15 } },
+                { id: 4, label: 'Bibliometria', value: 15, font: { color: '#cbd5e1' }, color: { background: '#f59e0b', border: '#d97706' }, shadow: { enabled: true, color: '#f59e0b', size: 15 } },
+                { id: 5, label: 'Preservação\nDigital', value: 18, font: { color: '#cbd5e1' }, color: { background: '#a855f7', border: '#9333ea' }, shadow: { enabled: true, color: '#a855f7', size: 15 } },
+                { id: 6, label: 'Gestão do\nConhecimento', value: 12, font: { color: '#cbd5e1' }, color: { background: '#0ea5e9', border: '#0284c7' }, shadow: { enabled: true, color: '#0ea5e9', size: 15 } }
             ]);
-            for(let i=7; i<=30; i++) nodes.add({ id: i, value: Math.random() * 5 + 2, color: { background: ['#10b981', '#06b6d4', '#3b82f6', '#f59e0b'][Math.floor(Math.random()*4)], border: 'transparent' } });
+
+            // Gerar alguns nós pequenos decorativos para a imersão visual
+            for(let i=7; i<=30; i++) {
+                nodes.add({
+                    id: i, 
+                    value: Math.random() * 5 + 2,
+                    color: { background: ['#10b981', '#06b6d4', '#3b82f6', '#f59e0b'][Math.floor(Math.random()*4)], border: 'transparent' },
+                    shadow: { enabled: true, size: 5, color: '#ffffff20' }
+                });
+            }
+
             const edges = new vis.DataSet([
                 { from: 1, to: 2, color: { color: '#047857', opacity: 0.6 }, width: 2 },
                 { from: 1, to: 3, color: { color: '#047857', opacity: 0.6 }, width: 2 },
@@ -89,45 +204,115 @@
                 { from: 2, to: 5, color: { color: '#334155', opacity: 0.4 } },
                 { from: 3, to: 4, color: { color: '#334155', opacity: 0.4 } },
                 { from: 5, to: 6, color: { color: '#334155', opacity: 0.4 }, width: 1.5 },
-                { from: 1, to: 6, color: { color: '#047857', opacity: 0.6 } }
+                { from: 1, to: 6, color: { color: '#047857', opacity: 0.6 } },
             ]);
+
             for(let i=7; i<=30; i++) {
                 edges.add({ from: i, to: Math.floor(Math.random() * 6) + 1, color: { color: '#334155', opacity: 0.2 } });
+                if(Math.random() > 0.5) edges.add({ from: i, to: Math.floor(Math.random() * 24) + 7, color: { color: '#334155', opacity: 0.1 } });
             }
+
             const container = document.getElementById('network-container');
             const data = { nodes: nodes, edges: edges };
-            const options = { nodes: { shape: 'dot' }, physics: { barnesHut: { gravitationalConstant: -3000 } } };
+            
+            // Configurações (Nota: a propriedade cursor foi removida para evitar erros no console)
+            const options = {
+                nodes: { shape: 'dot', scaling: { min: 5, max: 40 }, font: { face: 'Inter', color: '#94a3b8' } },
+                edges: { smooth: { type: 'continuous' } },
+                physics: {
+                    barnesHut: { gravitationalConstant: -3000, centralGravity: 0.3, springLength: 150, springConstant: 0.04 },
+                    stabilization: { iterations: 150 }
+                },
+                interaction: { hover: true, tooltipDelay: 200 }
+            };
+
             const network = new vis.Network(container, data, options);
+
+            // Mudando o cursor corretamente para "mãozinha" usando os eventos da biblioteca
+            network.on("hoverNode", function () {
+                network.canvas.body.container.style.cursor = 'pointer';
+            });
+            network.on("blurNode", function () {
+                network.canvas.body.container.style.cursor = 'default';
+            });
+
+            // Evento de clique para atualizar o painel lateral
             network.on("click", function (params) {
-                if (params.nodes.length > 0) updateInfoPanel(params.nodes[0]);
-                else closePanel();
+                if (params.nodes.length > 0) {
+                    const nodeId = params.nodes[0];
+                    updateInfoPanel(nodeId);
+                } else {
+                    closePanel();
+                }
             });
         }
+
+        // Atualização da Interface Visual no Clique
         function updateInfoPanel(nodeId) {
             const panel = document.getElementById('info-panel');
             const data = nodeData[nodeId];
+            
             if(data) {
                 document.getElementById('empty-state').classList.add('hidden');
                 document.getElementById('node-details').classList.remove('hidden');
+                
                 document.getElementById('node-title').textContent = data.title;
                 document.getElementById('node-title').style.color = data.color;
                 document.getElementById('node-subtitle').textContent = `${data.papers} Documentos Conectados`;
                 document.getElementById('node-desc').textContent = data.desc;
+                
+                let papersHtml = '';
+                data.papersList.forEach(paper => {
+                    papersHtml += `
+                    <div class="bg-slate-800/50 p-3 rounded border border-slate-700 hover:border-emerald-500/50 cursor-pointer transition-colors">
+                        <h5 class="text-sm text-white font-medium flex items-center gap-2">
+                            <svg class="w-4 h-4" style="color:${data.color}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg> 
+                            <span class="truncate w-48" title="${paper}">${paper}</span>
+                        </h5>
+                        <p class="text-xs text-slate-400 mt-1 pl-6">Analisado pela IA • Extraído do Drive</p>
+                    </div>`;
+                });
+                document.getElementById('papers-list').innerHTML = papersHtml;
                 panel.style.transform = 'translateX(0)';
+            } else {
+                document.getElementById('empty-state').classList.remove('hidden');
+                document.getElementById('node-details').classList.add('hidden');
             }
         }
+
         function closePanel() {
             document.getElementById('info-panel').style.transform = 'translateX(100%)';
         }
+
         function simulateAnalysis() {
             const input = document.getElementById('driveLink').value;
-            if(!input) return alert("Cole um link!");
+            if(!input) return alert("Cole um link do Google Drive primeiro!");
+            
+            const btn = document.querySelector('button');
             const loading = document.getElementById('loadingState');
+            btn.disabled = true;
+            btn.classList.add('opacity-50');
             loading.classList.remove('hidden');
+            
+            // Apaga o grafo para efeito de carregamento
             document.getElementById('network-container').innerHTML = '';
-            setTimeout(() => { loading.classList.add('hidden'); initNetwork(); }, 2000);
+            closePanel();
+            
+            setTimeout(() => {
+                loading.classList.add('hidden');
+                btn.disabled = false;
+                btn.classList.remove('opacity-50');
+                document.getElementById('driveLink').value = '';
+                // Recria o grafo
+                initNetwork();
+            }, 2500);
         }
+
+        // Iniciar
         initNetwork();
+        
+        // Esconde o painel ao carregar a página inicialmente
+        closePanel();
     </script>
 </body>
 </html>
